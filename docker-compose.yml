@@ -1,0 +1,20 @@
+name: wabantu-ai-worker
+
+services:
+  ai-worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: wabantu-ai-worker
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      REDIS_HOST: redis
+      API_INTERNAL_URL: http://wabantu-api:3001/api/v1
+    networks:
+      - wabantu_net
+
+networks:
+  wabantu_net:
+    external: true
