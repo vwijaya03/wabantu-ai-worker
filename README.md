@@ -5,9 +5,11 @@ BullMQ worker service dedicated to AI auto-reply jobs.
 ## What it does
 
 - Consumes queue `ai-auto-reply` from Redis.
+- Receives jobs with id format `<tenantId>_<inboundMessageId>`.
 - Calls API internal endpoint `POST /api/v1/internal/ai/auto-reply`.
 - Lets BullMQ handle retries (default 4 attempts, exponential backoff).
 - On terminal failure, calls `POST /api/v1/internal/ai/auto-reply/fallback`.
+- Outbound `message.metadata.reason` is assigned by API policy engine (`ai_generated`, `profile_incomplete`, `non_question`, `out_of_scope`).
 
 ## Why separate service
 
@@ -30,8 +32,18 @@ Critical variables:
 ```bash
 cp .env.example .env
 npm install
-npm run dev
+npm run start
 ```
+
+## Expected logs (happy path)
+
+1. `AI worker started and waiting for jobs`
+2. `Processing AI auto-reply job`
+3. `API call ok` for `/internal/ai/auto-reply`
+4. `AI auto-reply job done`
+
+If retries happen you will see `AI auto-reply job failed`; after max retries
+worker calls fallback endpoint automatically.
 
 ## Run with Docker
 
